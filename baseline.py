@@ -4,6 +4,7 @@ import argparse
 import math
 import torchvision
 import utils
+import pathlib
 import numpy as np
 import utils.cross_validate as CV
 from model import trainer, pipeline
@@ -39,18 +40,18 @@ def run_spatial(args=None):
         
         ###   cross-validation to get the best epoch
 
-        # best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch = CV.get_cv_resluts(train_patients, args.cv_fold, args, device)
+        best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch = CV.get_cv_resluts(train_patients, args.cv_fold, args, device)
 
-        # # print("Best loss epoch is: ", best_loss_epoch)
-        # # print("Best aMAE epoch is: ", best_aMAE_epoch) 
-        # # print("Best aRMSE epoch is: ", best_aRMSE_epoch) 
-        # # print("Best aCC epoch is: ", best_aCC_epoch)
-        # # print()
-        # best_epoch = math.ceil(np.mean(np.array(([best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch]))))
-        # print("Best CV epoch: ", best_epoch)
+        # print("Best loss epoch is: ", best_loss_epoch)
+        # print("Best aMAE epoch is: ", best_aMAE_epoch) 
+        # print("Best aRMSE epoch is: ", best_aRMSE_epoch) 
+        # print("Best aCC epoch is: ", best_aCC_epoch)
         # print()
+        best_epoch = math.ceil(np.mean(np.array(([best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch]))))
+        print("Best CV epoch: ", best_epoch)
+        print()
 
-        best_epoch = 50
+        # best_epoch = 50
 
         ###     cross-validation to get the best epoch
 
@@ -62,6 +63,9 @@ def run_spatial(args=None):
         ### main network
         model, train_loader, test_loader, optim, lr_scheduler, criterion = pipeline.setup(train_patients, test_patients, args, device)
 
+        if best_epoch <= 3:  # for debug
+            best_epoch = 3
+
         for epoch in range(best_epoch):
 
             if args.debug and epoch==3:
@@ -72,8 +76,10 @@ def run_spatial(args=None):
             lr_scheduler.step()
             # here test will save should change the file name
             test_loss = trainer.test(model, test_loader, criterion, device, args, best_epoch)
-
-        torch.save(model, args.pred_root + 'model.pkl')                 
+        
+        ### TODO: best_epoch = 0, skip the for loop and direct save model?
+        torch.save(model, args.pred_root + str(args.model) + '/model.pkl') 
+        print()                
             # 
         # # model.save (the best model should be the current epoch - patience)
         # # relative

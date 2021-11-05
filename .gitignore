@@ -10,6 +10,7 @@
 *.npy
 *.zip
 *.gz
+*.log
 
 # filter some folders 
 # data/  

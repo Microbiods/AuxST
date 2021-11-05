@@ -1,6 +1,8 @@
 import torchvision
 import torch
 import utils
+from model import net
+
 
 def setup(train_patients, test_patients, args, device, cv = False):
     
@@ -61,13 +63,14 @@ def setup(train_patients, test_patients, args, device, cv = False):
     test_loader = torch.utils.data.DataLoader(test_dataset, batch_size=args.batch, 
                                 num_workers=args.workers, shuffle=True)
 
+
     ### Model setup
 
     # model = ViT('B_16', pretrained=True)
     # model.fc = torch.nn.Linear(in_features=model.fc.in_features, out_features= outputs, bias=True)
 
-    model = torchvision.models.__dict__['resnet34'](pretrained=False)
-    model.fc = torch.nn.Linear(model.fc.in_features, args.gene_filter, bias=True)
+    architecture = net.set_models(args.model)
+    model = net.set_out_features(architecture, args.gene_filter)
 
     # for param in model.parameters():
     #         param.requires_grad = False
@@ -79,15 +82,23 @@ def setup(train_patients, test_patients, args, device, cv = False):
 
     model = torch.nn.DataParallel(model)
     model.to(device)
+
+
+
     criterion = torch.nn.MSELoss()
     # optim = torch.optim.__dict__['Adam'](model.parameters(), lr=3e-4, weight_decay = 1e-6)  # here need to be revised
+    
     optim = torch.optim.__dict__['SGD'](model.parameters(), lr=1e-3,
-                                momentum=0.9)  # here need to be revised
-                                # momentum=0.9, weight_decay = 1e-6)  # here need to be revised
+    #                             momentum=0.9)  # here need to be revised
+                                momentum=0.9, weight_decay = 1e-6)  # here need to be revised
 
-    lr_scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=5, gamma=0.1)
+    # optim = torch.optim.AdamW(model.parameters(), lr=3e-4, weight_decay=1e-6)
 
-    # # lr_scheduler = utils.util.LRScheduler(optim)
+    # lr_scheduler = torch.optim.lr_scheduler.StepLR(optim, step_size=5, gamma=0.1)
+    # lr_scheduler = utils.util.LRScheduler(optim)
+
+    lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max=5)
+    
     # # early_stopping = utils.util.EarlyStopping()
 
     return model, train_loader, test_loader, optim, lr_scheduler, criterion
