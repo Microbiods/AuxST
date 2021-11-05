@@ -1,0 +1,19 @@
+#
+#
+#
+
+# filter files with some specific suffixes
+*.pyc  
+*.npz 
+*.jpg
+*.pkl
+*.npy
+*.zip
+*.gz
+
+# filter some folders 
+# data/  
+debug/  
+# output/
+# training/
+# test/
