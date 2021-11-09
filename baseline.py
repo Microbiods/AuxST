@@ -109,6 +109,12 @@ if __name__ == '__main__':
 
     parser.add_argument("--model", type=str, default= 'densenet121', help="choose different model")   # alexnet, vgg16, resnet101, densenet121, inception_v3, efficientnet_b7
 
+
+    parser.add_argument("--pretrained", type=bool, default= False, help="use ImageNet pretrained model?")
+
+    parser.add_argument("--finetuning", type=bool, default= False, help="use ImageNet pretrained model with fine tuning fcs?")
+
+
     parser.add_argument("--gene_filter",  default=250, type =int,
                         help="specific predicted main genes (defalt use all the rest for aux tasks)")
 

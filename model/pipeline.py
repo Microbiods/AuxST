@@ -69,8 +69,27 @@ def setup(train_patients, test_patients, args, device, cv = False):
     # model = ViT('B_16', pretrained=True)
     # model.fc = torch.nn.Linear(in_features=model.fc.in_features, out_features= outputs, bias=True)
 
-    architecture = net.set_models(args.model)
+    architecture = net.set_models(args.model) # raw model
+
+    # set pretrained or fine-tuning, default is to initialize all the layers, only train fc? or based on all layers?
+
+    if args.transfer == 'randinit':
+
+    elif args.transfer == 'randinit':
+
+    else:
+
+
+
+    
     model = net.set_out_features(architecture, args.gene_filter)
+
+    
+
+
+
+
+
 
     # for param in model.parameters():
     #         param.requires_grad = False

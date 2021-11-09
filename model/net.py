@@ -5,20 +5,36 @@ import efficientnet_pytorch
 import torch.nn.functional as F
 
 
-def set_models(name):
+def set_models(name, args):
       
     if name == 'efficientnet_b4':  
         # model = efficientnet_pytorch.EfficientNet.from_pretrained('efficientnet-b4')  
         model = efficientnet_pytorch.EfficientNet.from_name('efficientnet-b4') # no pretrained
+        if args.pretrained:
+            model = efficientnet_pytorch.EfficientNet.from_pretrained('efficientnet-b4') 
+
+            if args.finetuning:
+
 
     elif name == "inception_v3": 
         model = torchvision.models.__dict__[name](pretrained=False, aux_logits=False)
+
+        if args.pretrained:
+            model = torchvision.models.__dict__[name](pretrained=True, aux_logits=False)
+
     
     elif name == "ViT": 
         model = pytorch_pretrained_vit.ViT('B_16', pretrained=False)
 
+        if args.pretrained:
+            model = pytorch_pretrained_vit.ViT('B_16', pretrained=True)
+
     else:
         model = torchvision.models.__dict__[name](pretrained=False)
+
+        if args.pretrained:
+            model = torchvision.models.__dict__[name](pretrained=True)
+
 
     return model
 
