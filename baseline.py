@@ -78,7 +78,10 @@ def run_spatial(args=None):
             test_loss = trainer.test(model, test_loader, criterion, device, args, best_epoch)
         
         ### TODO: best_epoch = 0, skip the for loop and direct save model?
-        torch.save(model, args.pred_root + str(args.model) + '/model.pkl') 
+        # if args.debug:
+        #     pass
+        # else:
+        torch.save(model, args.pred_root + '/model.pkl') 
         print()                
             # 
         # # model.save (the best model should be the current epoch - patience)
@@ -101,6 +104,8 @@ if __name__ == '__main__':
                                     
     parser.add_argument("--batch", type=int, default=32, help="training batch size")  
 
+    parser.add_argument("--learning_rate", type=float, default=1e-3, help="learning rate")
+
     parser.add_argument("--cv_epochs", type=int, default=50, help="number of cross-validation epochs")
 
     parser.add_argument("--workers", type=int, default=8, help="number of workers for dataloader")
@@ -109,11 +114,9 @@ if __name__ == '__main__':
 
     parser.add_argument("--model", type=str, default= 'densenet121', help="choose different model")   # alexnet, vgg16, resnet101, densenet121, inception_v3, efficientnet_b7
 
+    parser.add_argument("--pretrained", action="store_false", help="use ImageNet pretrained model?")
 
-    parser.add_argument("--pretrained", type=bool, default= False, help="use ImageNet pretrained model?")
-
-    parser.add_argument("--finetuning", type=bool, default= False, help="use ImageNet pretrained model with fine tuning fcs?")
-
+    parser.add_argument("--finetuning", type=str, default= None, help="use ImageNet pretrained model with fine tuning fcs?")
 
     parser.add_argument("--gene_filter",  default=250, type =int,
                         help="specific predicted main genes (defalt use all the rest for aux tasks)")

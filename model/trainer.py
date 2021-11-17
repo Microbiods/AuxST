@@ -136,8 +136,8 @@ def test(model, test_loader, criterion, device, args, epoch):
         pixel = np.concatenate(pixel)
 
         if args.pred_root:
-            pathlib.Path(os.path.dirname(args.pred_root+ str(args.model) + '/')).mkdir(parents=True, exist_ok=True)
-            np.savez_compressed(args.pred_root + str(args.model) + "/epoch_" + str(epoch),  #stopped epoch + 1 - patience 
+            pathlib.Path(os.path.dirname(args.pred_root + '/')).mkdir(parents=True, exist_ok=True)
+            np.savez_compressed(args.pred_root + "/epoch_" + str(epoch),  #stopped epoch + 1 - patience 
                                 task="gene",
                                 counts=epoch_count,
                                 predictions=epoch_preds,

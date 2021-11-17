@@ -1,30 +1,53 @@
 #!/bin/bash
-# alexnet, vgg19, resnet101, densenet121, inception_v3, resnext101_32x8d, efficientnet_b7
 
-# model=alexnet
-# python3 model_baseline.py --pred_root output/baseline_model_${model}/ --batch 32 --workers 8 --model ${model} 
-
-# model=vgg19
-# python3 model_baseline.py --pred_root output/baseline_model_${model}/ --batch 32 --workers 8 --model ${model}
-
-
-# declare -a StringArray=("alexnet" "vgg19" "resnet101" "densenet121" "inception_v3" "resnext101_32x8d" "efficientnet_b7" )
-# model 
-# declare -a StringArray=("efficientnet_b4")
-
+# declare -a StringArray=("alexnet" "vgg19" "inception_v3" "resnet101" "densenet121" "efficientnet_b4" "ViT")
 # for model in ${StringArray[@]}
-# do python3 model_baseline.py --pred_root output/baseline_model/${model}/ --batch 32 --workers 8 --model ${model} 
+# do
+ 
+# python3 baseline.py --model ${model} --pred_root output/model/${model}/
+
+# fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
+
 # done
 
-declare -a StringArray=("alexnet" "vgg19" "inception_v3" "resnet101" "densenet121" "efficientnet_b4" "ViT")
-for model in ${StringArray[@]}
+### return efficientnet_b4
+
+
+
+# declare -a StringArray=("ftfc" "ftconv" "ftall" )
+# for model in ${StringArray[@]}
+# do
+
+# python3 baseline.py --model efficientnet_b4 --pretrained --finetuning ${model} --pred_root output/transfer/${model}/
+
+# fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
+
+# done
+
+### return ftall
+
+
+
+
+###  cropped window sizes 128 150 299 384 512 and all resize to 224
+
+declare -a StringArray=( "128" "150" "299" "384" "512" )
+for win in ${StringArray[@]}
 do
- 
-python3 baseline.py --model ${model}
+
+python3 baseline.py --model efficientnet_b4 --pretrained --finetuning ftall --window ${win} --pred_root output/window/${win}/
 
 fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
 
 done
+
+
+
+
+### and resolutions
+
+
+
 
 
 
@@ -109,4 +132,4 @@ done
 # python3 model_baseline.py --pred_root output/baseline_model_${model}/ --batch 16 --workers 8 --model ${model}
 
 
-# nohup bash training.sh  > out.log 2>&1 &
+# nohup bash training.sh  > output/logging/transfer.log 2>&1 &

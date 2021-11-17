@@ -66,48 +66,58 @@ def setup(train_patients, test_patients, args, device, cv = False):
 
     ### Model setup
 
-    # model = ViT('B_16', pretrained=True)
-    # model.fc = torch.nn.Linear(in_features=model.fc.in_features, out_features= outputs, bias=True)
-
-    architecture = net.set_models(args.model) # raw model
+    architecture = net.set_models(args.model, args.pretrained) # get the architecture and return imageNet weights?
 
     # set pretrained or fine-tuning, default is to initialize all the layers, only train fc? or based on all layers?
 
-    if args.transfer == 'randinit':
+    model = net.set_out_features(architecture, args.gene_filter)  # get the model with the best params
 
-    elif args.transfer == 'randinit':
-
-    else:
+    # default is random initialized
 
 
 
-    
-    model = net.set_out_features(architecture, args.gene_filter)
+    if args.model == 'efficientnet-b4':
 
-    
+        if args.transfer == 'ftfc':  # fine tuning only classifier
+            for param in model.parameters():
+                param.requires_grad = False
+        
+            for cnt, child in enumerate(model.children()):
+                # print(cnt, child)
+                if cnt >= 7:
+                    for param in child.parameters():
+                        param.requires_grad = True
 
 
+        elif args.transfer == 'ftconv':  # fine tuning half of the MBConvBlocks
+
+            for param in model.parameters():
+                param.requires_grad = False
+
+            for param in model._blocks[15:].parameters():
+                param.requires_grad = True
+
+            for cnt, child in enumerate(model.children()):
+                # print(cnt, child)
+                if cnt >= 3:
+                    for param in child.parameters():
+                        param.requires_grad = True
 
 
+        elif args.transfer == 'ftall':  # fine tuning all the layers
+            for param in model.parameters():
+                param.requires_grad = True
 
-
-    # for param in model.parameters():
-    #         param.requires_grad = False
-    # for param in model.classifier[-1].parameters():
-    #     param.requires_grad = True
-
-    # model.classifier[-1].weight.data.zero_()
-    # model.classifier[-1].bias.data = torch.tensor(count_mean).clone()
+   
 
     model = torch.nn.DataParallel(model)
     model.to(device)
 
 
-
     criterion = torch.nn.MSELoss()
     # optim = torch.optim.__dict__['Adam'](model.parameters(), lr=3e-4, weight_decay = 1e-6)  # here need to be revised
     
-    optim = torch.optim.__dict__['SGD'](model.parameters(), lr=1e-3,
+    optim = torch.optim.__dict__['SGD'](model.parameters(), lr = args.learning_rate,
     #                             momentum=0.9)  # here need to be revised
                                 momentum=0.9, weight_decay = 1e-6)  # here need to be revised
 
