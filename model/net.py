@@ -11,7 +11,9 @@ def set_models(name, pretrained):
         # model = efficientnet_pytorch.EfficientNet.from_pretrained('efficientnet-b4')  
         model = efficientnet_pytorch.EfficientNet.from_name('efficientnet-b4') # no pretrained
         
-        if pretrained:
+        if pretrained:   ### use pretrained model
+
+            # print("Load ImageNet pre-trained weights.")
             model = efficientnet_pytorch.EfficientNet.from_pretrained('efficientnet-b4') 
 
 

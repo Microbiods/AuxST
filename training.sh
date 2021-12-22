@@ -14,41 +14,68 @@
 
 
 
-# declare -a StringArray=("ftfc" "ftconv" "ftall" )
-# for model in ${StringArray[@]}
+# declare -a StringArray=("ftfc" "ftconv" "ftall" ) # all are not freezed
+# for ft in ${StringArray[@]}
 # do
 
-# python3 baseline.py --model efficientnet_b4 --pretrained --finetuning ${model} --pred_root output/transfer/${model}/
+# python3 baseline.py --model efficientnet_b4 --pretrained --finetuning ${ft} --pred_root output/transfer_pretrained/${ft}/
 
 # fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
 
 # done
 
-### return ftall
+# return random init
+
+# 
 
 
 
 
-###  cropped window sizes 128 150 299 384 512 and all resize to 224
+# ###  cropped window sizes 128 150 299 384 512 and all resize to 224
 
-declare -a StringArray=( "128" "150" "299" "384" "512" )
-for win in ${StringArray[@]}
-do
+# declare -a StringArray=( "128" "150" "299" "384" "512" )
+# for win in ${StringArray[@]}
+# do
 
-python3 baseline.py --model efficientnet_b4 --pretrained --finetuning ftall --window ${win} --pred_root output/window/${win}/
+# python3 baseline.py --model efficientnet_b4 --finetuning ftall --window ${win} --pred_root output/window_init/${win}/ --debug
 
-fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
+# fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
 
-done
+# done
 
+# ### epoch = 30 may be enough   
 
-
-
-### and resolutions
-
+# # return 299
 
 
 
+
+
+# #### 11.25, comment the resize before run this
+
+# ## resolution to resize, default resolution is 224, window size 299
+
+
+# ### 299 is unless
+# # declare -a StringArray=( "128" "299" "384" "512" )
+
+# declare -a StringArray=( "299" "384" "512" )
+# for res in ${StringArray[@]}
+# do
+
+# python3 baseline.py --model efficientnet_b4 --finetuning ftall --window 299 --resolution ${res} --pred_root output/resolution/${res}/ --batch 8 --debug 
+
+# fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
+
+# done
+
+## and resolutions
+
+
+
+### use aux loss (weight for aux from 0 to 1, gene ratio from 250 (10%) to (100%) )
+
+python3 baseline.py --model efficientnet_b4 --finetuning ftall --window 299 --resolution 224 --pred_root output/resolution/${res}/ --batch 32 --debug 
 
 
 

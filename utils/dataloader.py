@@ -16,7 +16,7 @@ PIL.Image.MAX_IMAGE_PIXELS = 1000000000
 # ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 
-class Generator(torch.utils.data.Dataset):
+class Generator(torch.utils.data.Dataset):  # for baseline 
 
     def __init__(self,
                  patient=None,
@@ -119,11 +119,12 @@ class Generator(torch.utils.data.Dataset):
 
 
 
-class SubGenerator(torch.utils.data.Dataset):
+class SubGenerator(torch.utils.data.Dataset):  # for ablation 
 
     def __init__(self,
                  patient=None,
-                 window = 224,  
+                 window = 224, 
+                 resolution = 224, 
                  count_root='data/count_filtered/',
                  img_root='data/image_stained/',
                  img_cached = None,
@@ -139,6 +140,7 @@ class SubGenerator(torch.utils.data.Dataset):
     
        
         self.window = window
+        self.resolution = resolution
 
         self.count_root = count_root  # subtype path
         self.img_root = img_root  # training path
@@ -176,14 +178,27 @@ class SubGenerator(torch.utils.data.Dataset):
         X = slide.read_region((pixel[0] - self.window  // 2, pixel[1] - self.window  // 2), 0, (self.window , self.window ))  # return PIL.Image (Return an RGBA Image containing the contents of the specified region)
         X = X.convert("RGB") # may need create folder?
       
-        
-        he = X
-        X = self.transform(X)
-     
 
-        cached_image = "{}{}/{}/{}/{}_{}_{}.jpg".format(self.img_cached, self.subtype[patient], patient, self.window, section, coord[0], coord[1])
+        he = X
+
+        ### resize to specific resolutions
+
+        X = self.transform(X)
+
+        # cached_image = "{}{}/{}/{}/{}_{}_{}.jpg".format(self.img_cached, self.subtype[patient], patient, self.window, section, coord[0], coord[1])
+        # pathlib.Path(cached_image.strip(cached_image.split('/')[-1])).mkdir(parents=True, exist_ok=True)
+
+
+        ### only for get different resolutions
+
+        if self.resolution != 224:
+            he = torchvision.transforms.Resize((self.resolution, self.resolution))(he)
+        cached_image = "{}{}/{}/{}/{}/{}_{}_{}.jpg".format(self.img_cached, self.subtype[patient], patient, self.window, self.resolution, section, coord[0], coord[1])
         pathlib.Path(cached_image.strip(cached_image.split('/')[-1])).mkdir(parents=True, exist_ok=True)
     
+
+
+
         he.save(cached_image)
 
         return X, count
@@ -198,6 +213,7 @@ class Spatial(torch.utils.data.Dataset):
     def __init__(self,
                  patient=None,
                  window = 224,  
+                 resolution = 224,
                  count_root=None,
                  img_root=None,
                 #  count_root='training/counts/',
@@ -216,6 +232,7 @@ class Spatial(torch.utils.data.Dataset):
     
         self.transform = transform
         self.window = window
+        self.resolution = resolution
         self.count_root = count_root
         self.img_root = img_root
         self.gene_filter = gene_filter
@@ -255,17 +272,31 @@ class Spatial(torch.utils.data.Dataset):
         coord   = npz["index"]       # 11*17
       
         # # could save tif
-        cached_image = "{}{}/{}/{}/{}_{}_{}.jpg".format(self.img_root, self.subtype[patient], patient, self.window, section, coord[0], coord[1])
-        X = PIL.Image.open(cached_image)  # return RGB. Image type
+
+        if self.resolution != 224:
     
+            cached_image = "{}{}/{}/{}/{}/{}_{}_{}.jpg".format(self.img_root, self.subtype[patient], patient, self.window, self.resolution, section, coord[0], coord[1])
+            X = PIL.Image.open(cached_image)  # return RGB. Image type
+
+        else:
+            
+            cached_image = "{}{}/{}/{}/{}_{}_{}.jpg".format(self.img_root, self.subtype[patient], patient, self.window, section, coord[0], coord[1])
+            X = PIL.Image.open(cached_image)  # return RGB. Image type
 
         # TODO: for differnet window size
 
         if self.transform is not None:
             X = self.transform(X)
 
+
+
+        # # ### TODO: to be revised for window size debugging
         if X.shape[1] != 224:
             X = torchvision.transforms.Resize((224, 224))(X)
+
+
+
+        # print(X.shape)
 
         # Z = np.sum(count)  # the sum of the selected genes  (in an image)
         # n = count.shape[0] # how many genes to predict

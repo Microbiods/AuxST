@@ -19,9 +19,11 @@ def fit(model, train_loader, optim, criterion, args, device):
 
         epoch_count.append(y.cpu().detach().numpy())
         epoch_preds.append(pred.cpu().detach().numpy())
-
+        
         optim.zero_grad()
+
         loss = criterion(pred, y)  # batch-gene average
+
         total_loss += loss.cpu().detach().numpy()
 
         # aMAE = metrics.mean_absolute_error(y.cpu().detach().numpy(), pred.cpu().detach().numpy())
@@ -150,4 +152,3 @@ def test(model, test_loader, criterion, device, args, epoch):
                                 )
 
     return total_loss, total_aMAE, total_aRMSE, total_aCC
-

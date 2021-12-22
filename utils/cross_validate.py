@@ -78,4 +78,6 @@ def train_cv_folds(train_patients, test_patients, args, device):
         total_aRMSE.append(test_aRMSE)
         total_aCC.append(test_aCC)
 
+        torch.cuda.empty_cache()
+
     return total_loss, total_aMAE, total_aRMSE, total_aCC

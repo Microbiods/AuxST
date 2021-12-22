@@ -10,7 +10,8 @@ def setup(train_patients, test_patients, args, device, cv = False):
     train_dataset = utils.dataloader.Spatial(train_patients, 
                         count_root='training/counts/',
                         img_root='training/images/',
-                        window=args.window, gene_filter=args.gene_filter,
+                        window=args.window, resolution = args.resolution,
+                        gene_filter=args.gene_filter,
                             transform=torchvision.transforms.ToTensor()) # range [0, 255] -> [0.0,1.0]
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch, 
                             num_workers=args.workers, shuffle=True)
@@ -31,7 +32,8 @@ def setup(train_patients, test_patients, args, device, cv = False):
     train_dataset = utils.dataloader.Spatial(train_patients,
                         count_root='training/counts/',
                         img_root='training/images/', 
-                        window=args.window, gene_filter=args.gene_filter,
+                        window=args.window, resolution = args.resolution,
+                        gene_filter=args.gene_filter,
                             transform=train_transform,normalization = [count_mean, count_std]) # range [0, 255] -> [0.0,1.0]
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch, 
                             num_workers=args.workers, shuffle=True)
@@ -48,7 +50,8 @@ def setup(train_patients, test_patients, args, device, cv = False):
         test_dataset = utils.dataloader.Spatial(test_patients,
                                 count_root='training/counts/',
                                 img_root='training/images/',
-                                window=args.window, gene_filter=args.gene_filter, 
+                                window=args.window, resolution = args.resolution,
+                                gene_filter=args.gene_filter, 
                                 transform = val_transform, normalization = [count_mean, count_std])
 
     else: 
@@ -56,7 +59,8 @@ def setup(train_patients, test_patients, args, device, cv = False):
         test_dataset = utils.dataloader.Spatial(test_patients,
                                 count_root='test/counts/',
                                 img_root='test/images/',
-                                window=args.window, gene_filter=args.gene_filter, 
+                                window=args.window, resolution = args.resolution,
+                                gene_filter=args.gene_filter, 
                                 transform = val_transform, normalization = [count_mean, count_std])
 
 
@@ -74,11 +78,17 @@ def setup(train_patients, test_patients, args, device, cv = False):
 
     # default is random initialized
 
+    # print(args.finetuning)
+    # print(args.finetuning == 'ftfc')
+
+    # print(args.model)
+    # print(args.model == 'efficientnet_b4')
+
+    if args.model == 'efficientnet_b4':
+
+        if args.finetuning == 'ftfc':  # fine tuning only classifier
 
 
-    if args.model == 'efficientnet-b4':
-
-        if args.transfer == 'ftfc':  # fine tuning only classifier
             for param in model.parameters():
                 param.requires_grad = False
         
@@ -89,7 +99,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
                         param.requires_grad = True
 
 
-        elif args.transfer == 'ftconv':  # fine tuning half of the MBConvBlocks
+        elif args.finetuning == 'ftconv':  # fine tuning half of the MBConvBlocks
 
             for param in model.parameters():
                 param.requires_grad = False
@@ -104,11 +114,14 @@ def setup(train_patients, test_patients, args, device, cv = False):
                         param.requires_grad = True
 
 
-        elif args.transfer == 'ftall':  # fine tuning all the layers
+        elif args.finetuning == 'ftall':  # fine tuning all the layers
             for param in model.parameters():
                 param.requires_grad = True
 
-   
+
+    # for name, param in model.named_parameters():
+    #     if param.requires_grad:
+    #         print(name)
 
     model = torch.nn.DataParallel(model)
     model.to(device)
@@ -129,6 +142,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
     lr_scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optim, T_max=5)
     
     # # early_stopping = utils.util.EarlyStopping()
+
 
     return model, train_loader, test_loader, optim, lr_scheduler, criterion
 

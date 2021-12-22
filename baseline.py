@@ -38,7 +38,10 @@ def run_spatial(args=None):
         print("Parameters: ", args)
         print()
         
-        ###   cross-validation to get the best epoch
+
+
+
+        # ###   cross-validation to get the best epoch
 
         best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch = CV.get_cv_resluts(train_patients, args.cv_fold, args, device)
 
@@ -51,7 +54,9 @@ def run_spatial(args=None):
         print("Best CV epoch: ", best_epoch)
         print()
 
-        # best_epoch = 50
+
+
+        # best_epoch = 10
 
         ###     cross-validation to get the best epoch
 
@@ -82,7 +87,9 @@ def run_spatial(args=None):
         #     pass
         # else:
         torch.save(model, args.pred_root + '/model.pkl') 
-        print()                
+        print()  
+
+        torch.cuda.empty_cache()              
             # 
         # # model.save (the best model should be the current epoch - patience)
         # # relative
@@ -112,9 +119,11 @@ if __name__ == '__main__':
 
     parser.add_argument("--window", type=int, default=224, help="window size") # try 128 150 224 299 512 (smaller, normal, and bigger)
 
+    parser.add_argument("--resolution", type=int, default=224, help="resolution") # try 
+
     parser.add_argument("--model", type=str, default= 'densenet121', help="choose different model")   # alexnet, vgg16, resnet101, densenet121, inception_v3, efficientnet_b7
 
-    parser.add_argument("--pretrained", action="store_false", help="use ImageNet pretrained model?")
+    parser.add_argument("--pretrained", action="store_true", help="use ImageNet pretrained model?")
 
     parser.add_argument("--finetuning", type=str, default= None, help="use ImageNet pretrained model with fine tuning fcs?")
 
