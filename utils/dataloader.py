@@ -219,6 +219,7 @@ class Spatial(torch.utils.data.Dataset):
                 #  count_root='training/counts/',
                 #  img_root='training/images/',
                  gene_filter = 250,
+                 aux_ratio = 0.1,
                  transform=None,
                  normalization=None,
                  ):
@@ -236,6 +237,9 @@ class Spatial(torch.utils.data.Dataset):
         self.count_root = count_root
         self.img_root = img_root
         self.gene_filter = gene_filter
+
+        self.aux_ratio = aux_ratio
+
         self.normalization = normalization
       
         # read subtype: HER2_non_luminal
@@ -253,12 +257,24 @@ class Spatial(torch.utils.data.Dataset):
 
         # save the top gene names and indexes to get the counts
         keep_gene = set(list(zip(*sorted(zip(self.mean_expression, range(self.mean_expression.shape[0])))[::-1][:self.gene_filter]))[1])
+        
         self.keep_bool = np.array([i in keep_gene for i in range(len(self.gene_names))])   # set keeped gene index to be true else to be false
         
+        ### here not the first 250 or the last 5000+ but the 250 given true or false 
+
         self.ensg_keep = [n for (n, f) in zip(self.ensg_names, self.keep_bool) if f]
         self.gene_keep = [n for (n, f) in zip(self.gene_names, self.keep_bool) if f]
-       
 
+        ### self.aux_ratio cannot be zero, or it will return out of index
+        if self.aux_ratio != 0:
+            self.aux_nums = int((len(self.gene_names) - self.gene_filter) * self.aux_ratio)   # from 0 to 1, 0 equals to no aux prediction, 1 means use all for aux
+            aux_gene = set(list(zip(*sorted(zip(self.mean_expression, range(self.mean_expression.shape[0])))[::-1][self.gene_filter:self.gene_filter + self.aux_nums]))[1])
+            self.aux_bool = np.array([i in aux_gene for i in range(len(self.gene_names))]) 
+            self.ensg_aux = [n for (n, f) in zip(self.ensg_names, self.aux_bool) if f]
+            self.gene_aux = [n for (n, f) in zip(self.gene_names, self.aux_bool) if f]
+
+            # print(aux_nums,len(aux_gene),len(self.aux_bool),len(self.ensg_aux),len(self.gene_aux))
+           
     def __len__(self):
         return len(self.dataset)
 
@@ -301,12 +317,13 @@ class Spatial(torch.utils.data.Dataset):
         # Z = np.sum(count)  # the sum of the selected genes  (in an image)
         # n = count.shape[0] # how many genes to predict
 
-        count = count[self.keep_bool]
-        y = torch.as_tensor(count, dtype=torch.float)
+        # print(count.shape)
 
         coord = torch.as_tensor(coord)
         index = torch.as_tensor([index])
 
+        keep_count = count[self.keep_bool]
+        y = torch.as_tensor(keep_count, dtype=torch.float)
         y = torch.log(1 + y)
 
         # y = torch.log((1 + y) / (n + Z))
@@ -317,5 +334,15 @@ class Spatial(torch.utils.data.Dataset):
         if self.normalization is not None:
             y = (y - self.normalization[0]) / self.normalization[1]
 
-        return X, y, coord, index, patient, section, pixel
+        if self.aux_ratio != 0: ### return aux
+
+            aux_count = count[self.aux_bool]
+            aux = torch.as_tensor(aux_count, dtype=torch.float)
+            aux = torch.log(1 + aux)
+
+            return X, y, aux, coord, index, patient, section, pixel
+        
+        else:
+
+            return X, y, coord, index, patient, section, pixel
        

@@ -40,7 +40,18 @@ def set_models(name, pretrained):
     return model
 
 
+class AuxNet(torch.nn.Module):
 
+    def __init__(self, input_dim, output, aux_output) :
+        super(AuxNet, self).__init__()
+        self.fc = torch.nn.Linear(input_dim, output)
+        self.aux_fc = torch.nn.Linear(input_dim, aux_output)
+
+    def forward(self, x):
+        
+        y = self.fc(x)
+        aux = self.aux_fc(x)
+        return y, aux
 
 
 def set_out_features(model, outputs):  # alexnet, vgg19, inceptionv3, resnet101, densenet121, efficientnetB4, vit16

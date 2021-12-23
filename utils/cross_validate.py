@@ -26,6 +26,7 @@ def get_cv_resluts(patients, cv_folds, args, device):
         test = fold[f]
         print("Train patients: ", train)
         print("Test patients: ", test)
+        print("Parameters: ", args)
         test_loss, test_aMAE, test_aRMSE, test_aCC = train_cv_folds(train, test, args, device)
 
         total_loss.append(test_loss)

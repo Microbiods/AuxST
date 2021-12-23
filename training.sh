@@ -74,10 +74,23 @@
 
 
 ### use aux loss (weight for aux from 0 to 1, gene ratio from 250 (10%) to (100%) )
+### aux_ratio=0.1 (), aux_weight=1
 
-python3 baseline.py --model efficientnet_b4 --finetuning ftall --window 299 --resolution 224 --pred_root output/resolution/${res}/ --batch 32 --debug 
+declare -a StringArray=( "0.1" "0.2" "0.3" "0.4" "0.5" "0.6" "0.7" "0.8" "0.9" "1.0")
+for i in ${StringArray[@]}
+do
+
+python3 baseline.py --model efficientnet_b4 --finetuning ftall --window 299 --resolution 224 --aux_ratio ${i} --pred_root output/auxnet/ratio_${i} --batch 32 
+
+fuser -v /dev/nvidia* |awk '{for(i=1;i<=NF;i++)print "kill -9 " $i;}' | sh
+
+done
 
 
+
+
+
+### use lstm (weight for aux from 0 to 1, gene ratio from 250 (10%) to (100%) )
 
 
 # declare -a StringArray=("alexnet" "vgg19" "resnet101" "densenet121" "inception_v3" "resnext101_32x8d" "efficientnet_b4" )
@@ -159,4 +172,4 @@ python3 baseline.py --model efficientnet_b4 --finetuning ftall --window 299 --re
 # python3 model_baseline.py --pred_root output/baseline_model_${model}/ --batch 16 --workers 8 --model ${model}
 
 
-# nohup bash training.sh  > output/logging/transfer.log 2>&1 &
+# nohup bash training.sh  > output/logging/aux_ratio.log 2>&1 &

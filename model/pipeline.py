@@ -11,7 +11,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
                         count_root='training/counts/',
                         img_root='training/images/',
                         window=args.window, resolution = args.resolution,
-                        gene_filter=args.gene_filter,
+                        gene_filter=args.gene_filter, aux_ratio = args.aux_ratio,
                             transform=torchvision.transforms.ToTensor()) # range [0, 255] -> [0.0,1.0]
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch, 
                             num_workers=args.workers, shuffle=True)
@@ -33,7 +33,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
                         count_root='training/counts/',
                         img_root='training/images/', 
                         window=args.window, resolution = args.resolution,
-                        gene_filter=args.gene_filter,
+                        gene_filter=args.gene_filter, aux_ratio = args.aux_ratio,
                             transform=train_transform,normalization = [count_mean, count_std]) # range [0, 255] -> [0.0,1.0]
     train_loader = torch.utils.data.DataLoader(train_dataset, batch_size=args.batch, 
                             num_workers=args.workers, shuffle=True)
@@ -51,7 +51,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
                                 count_root='training/counts/',
                                 img_root='training/images/',
                                 window=args.window, resolution = args.resolution,
-                                gene_filter=args.gene_filter, 
+                                gene_filter=args.gene_filter, aux_ratio = args.aux_ratio,
                                 transform = val_transform, normalization = [count_mean, count_std])
 
     else: 
@@ -60,7 +60,7 @@ def setup(train_patients, test_patients, args, device, cv = False):
                                 count_root='test/counts/',
                                 img_root='test/images/',
                                 window=args.window, resolution = args.resolution,
-                                gene_filter=args.gene_filter, 
+                                gene_filter=args.gene_filter, aux_ratio = args.aux_ratio,
                                 transform = val_transform, normalization = [count_mean, count_std])
 
 
@@ -123,6 +123,14 @@ def setup(train_patients, test_patients, args, device, cv = False):
     #     if param.requires_grad:
     #         print(name)
 
+    ### if aux:
+    # print(model)
+    if args.aux_ratio != 0: ### return aux
+        model._fc = net.AuxNet(model._fc.in_features, train_dataset.gene_filter, train_dataset.aux_nums)
+
+
+    # print(model)
+    
     model = torch.nn.DataParallel(model)
     model.to(device)
 

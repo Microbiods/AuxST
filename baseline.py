@@ -64,6 +64,7 @@ def run_spatial(args=None):
         print()
         print("Train patients: ",  train_patients)
         print("Test patients: ", test_patients)
+        print("Parameters: ", args)
 
         ### main network
         model, train_loader, test_loader, optim, lr_scheduler, criterion = pipeline.setup(train_patients, test_patients, args, device)
@@ -129,6 +130,12 @@ if __name__ == '__main__':
 
     parser.add_argument("--gene_filter",  default=250, type =int,
                         help="specific predicted main genes (defalt use all the rest for aux tasks)")
+
+    parser.add_argument("--aux_ratio",  default=0.1, type =float,
+                        help="specific the number of aux genes")
+
+    parser.add_argument("--aux_weight",  default=1, type =float,
+                        help="specific the loss weight of aux genes")
 
     parser.add_argument("--epochs", type=int, default=50, help="number of epochs")
 
