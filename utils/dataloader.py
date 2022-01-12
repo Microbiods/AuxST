@@ -219,7 +219,7 @@ class Spatial(torch.utils.data.Dataset):
                 #  count_root='training/counts/',
                 #  img_root='training/images/',
                  gene_filter = 250,
-                 aux_ratio = 0.1,
+                 aux_ratio = 1,
                  transform=None,
                  normalization=None,
                  ):

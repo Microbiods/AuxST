@@ -131,7 +131,7 @@ if __name__ == '__main__':
     parser.add_argument("--gene_filter",  default=250, type =int,
                         help="specific predicted main genes (defalt use all the rest for aux tasks)")
 
-    parser.add_argument("--aux_ratio",  default=0.1, type =float,
+    parser.add_argument("--aux_ratio",  default=1, type =float,
                         help="specific the number of aux genes")
 
     parser.add_argument("--aux_weight",  default=1, type =float,
