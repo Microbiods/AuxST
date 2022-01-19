@@ -281,6 +281,16 @@ class Spatial(torch.utils.data.Dataset):
     def __getitem__(self, index):
 
         npz = np.load(self.dataset[index])
+
+        ### training/counts/HER2_non_luminal/BC24044/E1_9_29.npz
+        ### here to get the neighbor 
+
+
+        # self.dataset[index].split('/')[-1]
+        
+        # print(self.dataset[index])
+
+
         count   = npz["count"]
         pixel   = npz["pixel"]
         patient = npz["patient"][0]

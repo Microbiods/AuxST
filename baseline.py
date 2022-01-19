@@ -38,9 +38,6 @@ def run_spatial(args=None):
         print("Parameters: ", args)
         print()
         
-
-
-
         # ###   cross-validation to get the best epoch
 
         best_loss_epoch, best_aMAE_epoch, best_aRMSE_epoch, best_aCC_epoch = CV.get_cv_resluts(train_patients, args.cv_fold, args, device)
